@@ -1,0 +1,9 @@
+.container {
+  background-color: #12002b;
+  height: 93vh;
+  margin-top: 0;
+
+  @media (min-width: 720px) {
+    height: 85vh;
+  }
+}

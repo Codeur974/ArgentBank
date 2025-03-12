@@ -1,0 +1,44 @@
+.connexion {
+  position: absolute;
+  top: 33%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  background-color: white;
+  width: 300px;
+  padding: 2rem;
+
+  &__icon {
+    font-size: 1rem;
+  }
+}
+.form__input__wrapper {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  margin-bottom: 1rem;
+  & > label {
+    font-weight: bold;
+  }
+  & > input {
+    padding: 5px;
+    font-size: 1.2rem;
+  }
+}
+.form__input__remember {
+  display: flex;
+  & > label {
+    margin-left: 0.25rem;
+  }
+}
+.form__button {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  border-color: #00bc77;
+  background-color: #00bc77;
+  color: #fff;
+}
