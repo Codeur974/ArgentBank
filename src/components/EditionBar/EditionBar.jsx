@@ -1,3 +1,4 @@
+import EditForm from "../Form/EditForm";
 import styles from "./editionBar.module.scss";
 
 export default function EditionBar() {
@@ -10,6 +11,7 @@ export default function EditionBar() {
       </h1>
       <button className={styles.editionBar__button}>Edit Name</button>
       <h2 className="sr-only">Accounts</h2>
+      <EditForm />
     </div>
   );
 }
