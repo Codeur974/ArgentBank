@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { loginUser, setError } from "../../utils/redux";
 import styles from "./form.module.scss";
 import { FaUserCircle } from "react-icons/fa";
+import Buttons from "../Buttons/Buttons";
 
 export default function Form() {
   const dispatch = useDispatch();
@@ -75,13 +76,12 @@ export default function Form() {
           <label htmlFor="remember-me">Remember me</label>
         </div>
 
-        <button
+        <Buttons
           type="submit"
+          title={"Sign In"}
           className={styles.form__button}
           disabled={!email || !password}
-        >
-          Sign In
-        </button>
+        />
       </form>
     </div>
   );

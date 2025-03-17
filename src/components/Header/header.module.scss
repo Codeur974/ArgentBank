@@ -29,7 +29,7 @@
 
 .main__nav__item {
   display: flex;
-  font-size: 16px;
+  font-size: 12px;
   align-items: center;
   text-decoration: none;
 
@@ -40,6 +40,9 @@
   &:hover {
     text-decoration: underline;
   }
+  @media (min-width: 720px) {
+    font-size: 16px;
+  }
 }
 
 .main-nav-logo {
@@ -48,8 +51,13 @@
 }
 
 .main-nav-logo-image {
-  max-width: 100%;
-  width: 200px;
+  max-width: 90%;
+  width: 150px;
+  cursor: pointer;
+  @media (min-width: 720px) {
+    max-width: 100%;
+    width: 200px;
+  }
 }
 .icon-spacing {
   margin-right: 3px;

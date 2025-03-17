@@ -1,11 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// ✅ Thunk pour la connexion de l'utilisateur
+// Thunk pour la connexion de l'utilisateur
 export const loginUser = createAsyncThunk(
   "user/loginUser",
   async ({ email, password, rememberMe }, { dispatch, rejectWithValue }) => {
     try {
-      // 🔹 Étape 1 : Connexion (POST /login)
       const loginResponse = await fetch(
         "http://localhost:3001/api/v1/user/login",
         {
@@ -16,17 +15,15 @@ export const loginUser = createAsyncThunk(
       );
 
       const loginData = await loginResponse.json();
-      console.log("Login Response:", loginData); // Ajoutez ce log pour voir la réponse de l'API
       if (!loginResponse.ok) {
         return rejectWithValue(loginData.error || "Échec de la connexion");
       }
 
-      const token = loginData.body.token; // Assurez-vous d'extraire le token correctement
+      const token = loginData.body.token;
       if (!token) {
         return rejectWithValue("Token manquant !");
       }
 
-      // 🔹 Étape 2 : Récupération du profil (GET /profile)
       const profileResponse = await fetch(
         "http://localhost:3001/api/v1/user/profile",
         {
@@ -39,7 +36,6 @@ export const loginUser = createAsyncThunk(
       );
 
       const profileData = await profileResponse.json();
-      console.log("Profile Response:", profileData); // Ajoutez ce log pour voir la réponse de l'API
       if (!profileResponse.ok) {
         return rejectWithValue(
           profileData.error || "Échec de la récupération du profil"
@@ -53,7 +49,7 @@ export const loginUser = createAsyncThunk(
         lastName: profileData.lastName,
       };
 
-      // 🔹 Stockage des données
+      // Stockage des données
       if (rememberMe) {
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("token", token);
@@ -62,7 +58,6 @@ export const loginUser = createAsyncThunk(
         sessionStorage.setItem("token", token);
       }
 
-      console.log("Dispatching loginSuccess"); // Ajoutez ce log pour vérifier que l'action est dispatchée
       dispatch(
         loginSuccess({
           email,
@@ -70,16 +65,18 @@ export const loginUser = createAsyncThunk(
           firstName: profileData.firstName,
           lastName: profileData.lastName,
           token,
+          rememberMe,
         })
       );
     } catch (error) {
       console.log(error);
+
       return rejectWithValue("Erreur serveur");
     }
   }
 );
 
-// ✅ Thunk pour récupérer les données de l'utilisateur
+// Thunk pour récupérer les données de l'utilisateur
 export const fetchUserData = createAsyncThunk(
   "user/fetchUserData",
   async (_, { rejectWithValue }) => {
@@ -111,6 +108,7 @@ export const fetchUserData = createAsyncThunk(
       return data.body;
     } catch (error) {
       console.log(error);
+
       return rejectWithValue("Erreur serveur");
     }
   }
@@ -129,16 +127,15 @@ const initialState = {
   isAuthenticated:
     !!localStorage.getItem("token") || !!sessionStorage.getItem("token"),
   isEditFormVisible: false,
+  rememberMe: !!localStorage.getItem("token"), // Ajoutez cette ligne
   errors: {},
 };
 
-// ✅ Reducer avec actions Redux
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
     loginSuccess: (state, action) => {
-      console.log("loginSuccess called"); // Ajoutez ce log pour vérifier que le reducer est appelé
       state.user = {
         email: action.payload.email,
         username: action.payload.username,
@@ -146,7 +143,8 @@ const userSlice = createSlice({
         lastName: action.payload.lastName,
       };
       state.token = action.payload.token;
-      state.isAuthenticated = true; // ✅ Mise à jour de l'état isAuthenticated
+      state.isAuthenticated = true;
+      state.rememberMe = action.payload.rememberMe; // Ajoutez cette ligne
       state.errors = {};
     },
     logout: (state) => {
@@ -176,8 +174,11 @@ const userSlice = createSlice({
         JSON.parse(localStorage.getItem("user")) ||
         JSON.parse(sessionStorage.getItem("user"));
       user.username = action.payload;
-      localStorage.setItem("user", JSON.stringify(user));
-      sessionStorage.setItem("user", JSON.stringify(user));
+      if (state.rememberMe) {
+        localStorage.setItem("user", JSON.stringify(user));
+      } else {
+        sessionStorage.setItem("user", JSON.stringify(user));
+      }
     },
   },
   extraReducers: (builder) => {

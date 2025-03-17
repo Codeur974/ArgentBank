@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import EditForm from "../Form/EditForm";
 import styles from "./editionBar.module.scss";
 import { showEditForm, hideEditForm, fetchUserData } from "../../utils/redux";
+import Buttons from "../Buttons/Buttons";
 
 export default function EditionBar() {
   const dispatch = useDispatch();
@@ -26,16 +27,20 @@ export default function EditionBar() {
   };
 
   return (
-    <div>
+    <div className={styles.editionBar__container}>
       <h1 className={styles.editionBar__title}>
         Welcome back
         <br />
         {username ? username : `${firstName} ${lastName}`}!
       </h1>
       {!isEditFormVisible && (
-        <button className={styles.editionBar__button} onClick={toggleEditForm}>
-          Edit Name
-        </button>
+        <div className={styles.editionBar__button}>
+          <Buttons
+            title={"Edit Name"}
+            className={styles.editionBar__button}
+            onClick={toggleEditForm}
+          />
+        </div>
       )}
       <h2 className="sr-only">Accounts</h2>
       {isEditFormVisible && (

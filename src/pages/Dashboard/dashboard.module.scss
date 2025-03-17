@@ -1,8 +1,4 @@
 .dashboard__container {
+  position: relative;
   background-color: #12002b;
-  height: 93vh;
-
-  @media (min-width: 720px) {
-    height: 85vh;
-  }
 }

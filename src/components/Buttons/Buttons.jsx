@@ -1,5 +1,10 @@
 import styles from "./button.module.scss";
+const Buttons = ({ title, className, ...props }) => {
+  return (
+    <button className={`${styles.buttons} ${className}`} {...props}>
+      {title}
+    </button>
+  );
+};
 
-export default function Buttons({ title }) {
-  return <div className={styles.Buttons}>{title}</div>;
-}
+export default Buttons;

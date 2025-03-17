@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { updateUsername } from "../../utils/redux";
 import styles from "./editForm.module.scss";
+import Buttons from "../Buttons/Buttons";
 
 export default function EditForm({
   username = "",
@@ -19,7 +20,7 @@ export default function EditForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(updateUsername(newUsername));
-    onCancel(); // Fermer le formulaire après la mise à jour
+    onCancel();
   };
 
   return (
@@ -42,16 +43,14 @@ export default function EditForm({
         <input type="text" id="lastName" value={lastName} readOnly />
       </div>
       <div className={styles.form__buttons}>
-        <button type="submit" className={styles.form__button}>
-          Save
-        </button>
-        <button
+        <Buttons title={"Save"} type="submit" className={styles.form__button} />
+
+        <Buttons
+          title={"Cancel"}
           type="button"
           className={styles.form__button}
           onClick={onCancel}
-        >
-          Cancel
-        </button>
+        />
       </div>
     </form>
   );

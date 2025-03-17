@@ -54,3 +54,9 @@
     }
   }
 }
+.user__container {
+  min-height: 75vh;
+  @media (min-width: 720px) {
+    min-height: 60vh;
+  }
+}

@@ -13,6 +13,9 @@ export default function Header() {
 
   const handleSignOut = () => {
     dispatch(logout());
+    navigate("/");
+  };
+  const handleSignIn = () => {
     navigate("/connexion");
   };
 
@@ -32,6 +35,7 @@ export default function Header() {
             src={logo}
             alt="Logo"
             className={styles["main-nav-logo-image"]}
+            onClick={handleSignOut}
           />
         </div>
         <div>
@@ -50,7 +54,7 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <button className={styles.main__nav__item} to="/connexion">
+            <button className={styles.main__nav__item} onClick={handleSignIn}>
               <FaUserCircle className={styles["icon-spacing"]} />
               Sign In
             </button>

@@ -1,8 +1,9 @@
 import UserTransaction from "./UserTransaction";
+import styles from "./userTransaction.module.scss";
 
 export default function UserTransactionContainer() {
   return (
-    <div>
+    <div className={styles.user__container}>
       <UserTransaction
         title="Argent Bank Checking (x8349)"
         amount="$2,082.79"
