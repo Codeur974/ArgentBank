@@ -1,8 +1,8 @@
 import React from "react";
 import logo from "../../assets/images/logo.webp";
 import styles from "./Header.module.scss";
-import { Link, useNavigate } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../utils/redux";
 
@@ -16,6 +16,14 @@ export default function Header() {
     navigate("/connexion");
   };
 
+  const storedUser =
+    JSON.parse(localStorage.getItem("user")) ||
+    JSON.parse(sessionStorage.getItem("user"));
+  const displayName =
+    user.username ||
+    (storedUser && storedUser.username) ||
+    `${user.firstName} ${user.lastName}`;
+
   return (
     <div className={styles.header}>
       <div className={styles["main-nav"]}>
@@ -28,23 +36,24 @@ export default function Header() {
         </div>
         <div>
           {isAuthenticated ? (
-            <>
-              <span className={styles["main-nav-item"]}>
+            <div className={styles.nav__buttons}>
+              <span className={styles.main__nav__item}>
                 <FaUserCircle className={styles["icon-spacing"]} />
-                {user?.username}
+                {displayName}
               </span>
               <button
-                className={styles["main-nav-item"]}
+                className={styles.main__nav__item}
                 onClick={handleSignOut}
               >
+                <FaSignOutAlt className={styles["icon-spacing"]} />
                 Sign Out
               </button>
-            </>
+            </div>
           ) : (
-            <Link className={styles["main-nav-item"]} to="/connexion">
+            <button className={styles.main__nav__item} to="/connexion">
               <FaUserCircle className={styles["icon-spacing"]} />
               Sign In
-            </Link>
+            </button>
           )}
         </div>
       </div>

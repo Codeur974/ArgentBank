@@ -46,7 +46,12 @@ export const loginUser = createAsyncThunk(
         );
       }
 
-      const userData = { email, username: profileData.username };
+      const userData = {
+        email,
+        username: profileData.username,
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+      };
 
       // 🔹 Stockage des données
       if (rememberMe) {
@@ -58,7 +63,52 @@ export const loginUser = createAsyncThunk(
       }
 
       console.log("Dispatching loginSuccess"); // Ajoutez ce log pour vérifier que l'action est dispatchée
-      dispatch(loginSuccess({ email, username: profileData.username, token }));
+      dispatch(
+        loginSuccess({
+          email,
+          username: profileData.username,
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          token,
+        })
+      );
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue("Erreur serveur");
+    }
+  }
+);
+
+// ✅ Thunk pour récupérer les données de l'utilisateur
+export const fetchUserData = createAsyncThunk(
+  "user/fetchUserData",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) {
+        return rejectWithValue("Token manquant !");
+      }
+
+      const response = await fetch(
+        "http://localhost:3001/api/v1/user/profile",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        return rejectWithValue(
+          data.error || "Échec de la récupération des données de l'utilisateur"
+        );
+      }
+
+      return data.body;
     } catch (error) {
       console.log(error);
       return rejectWithValue("Erreur serveur");
@@ -67,9 +117,18 @@ export const loginUser = createAsyncThunk(
 );
 
 const initialState = {
-  user: JSON.parse(localStorage.getItem("user")) || { email: "", username: "" },
-  token: localStorage.getItem("token") || null,
-  isAuthenticated: !!localStorage.getItem("token"),
+  user: JSON.parse(localStorage.getItem("user")) ||
+    JSON.parse(sessionStorage.getItem("user")) || {
+      email: "",
+      username: "",
+      firstName: "",
+      lastName: "",
+    },
+  token:
+    localStorage.getItem("token") || sessionStorage.getItem("token") || null,
+  isAuthenticated:
+    !!localStorage.getItem("token") || !!sessionStorage.getItem("token"),
+  isEditFormVisible: false,
   errors: {},
 };
 
@@ -83,25 +142,58 @@ const userSlice = createSlice({
       state.user = {
         email: action.payload.email,
         username: action.payload.username,
+        firstName: action.payload.firstName,
+        lastName: action.payload.lastName,
       };
       state.token = action.payload.token;
       state.isAuthenticated = true; // ✅ Mise à jour de l'état isAuthenticated
       state.errors = {};
     },
     logout: (state) => {
-      state.user = { email: "", username: "" };
+      state.user = {
+        email: "",
+        username: state.user.username,
+        firstName: "",
+        lastName: "",
+      };
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem("user");
       localStorage.removeItem("token");
-      sessionStorage.removeItem("user");
       sessionStorage.removeItem("token");
     },
     setError: (state, action) => {
       state.errors = action.payload;
     },
+    showEditForm: (state) => {
+      state.isEditFormVisible = true;
+    },
+    hideEditForm: (state) => {
+      state.isEditFormVisible = false;
+    },
+    updateUsername: (state, action) => {
+      state.user.username = action.payload;
+      const user =
+        JSON.parse(localStorage.getItem("user")) ||
+        JSON.parse(sessionStorage.getItem("user"));
+      user.username = action.payload;
+      localStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("user", JSON.stringify(user));
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchUserData.fulfilled, (state, action) => {
+      state.user.firstName = action.payload.firstName;
+      state.user.lastName = action.payload.lastName;
+    });
   },
 });
 
-export const { loginSuccess, logout, setError } = userSlice.actions;
+export const {
+  loginSuccess,
+  logout,
+  setError,
+  showEditForm,
+  hideEditForm,
+  updateUsername,
+} = userSlice.actions;
 export default userSlice.reducer;
