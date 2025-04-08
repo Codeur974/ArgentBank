@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { loginUser, setError } from "../../utils/redux";
+import { loginUser } from "../../utils/redux"; // Suppression de setError et updateUsername
 import styles from "./form.module.scss";
 import { FaUserCircle } from "react-icons/fa";
 import Buttons from "../Buttons/Buttons";
@@ -9,7 +9,7 @@ import Buttons from "../Buttons/Buttons";
 export default function Form() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { errors } = useSelector((state) => state.user);
+  const { error } = useSelector((state) => state.user); // Utilisation de error depuis Redux
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,11 +18,7 @@ export default function Form() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email.includes("@")) {
-      dispatch(setError({ email: "Email invalide" }));
-      return;
-    }
-
+    // Appel de l'action loginUser
     const resultAction = await dispatch(
       loginUser({ email, password, rememberMe })
     );
@@ -51,7 +47,7 @@ export default function Form() {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
           />
-          {errors?.email && <p className={styles.error}>{errors.email}</p>}
+          {error?.email && <p className={styles.error}>{error.email}</p>}
         </div>
         <div className={styles.form__input__wrapper}>
           <label htmlFor="password">Password</label>
@@ -62,9 +58,7 @@ export default function Form() {
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
           />
-          {errors?.password && (
-            <p className={styles.error}>{errors.password}</p>
-          )}
+          {error?.password && <p className={styles.error}>{error.password}</p>}
         </div>
         <div className={styles.form__input__remember}>
           <input

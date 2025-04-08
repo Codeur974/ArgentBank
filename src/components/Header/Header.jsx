@@ -9,23 +9,23 @@ import { logout } from "../../utils/redux";
 export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Accès à l'état Redux
   const { isAuthenticated, user } = useSelector((state) => state.user);
 
   const handleSignOut = () => {
     dispatch(logout());
     navigate("/");
   };
+
   const handleSignIn = () => {
     navigate("/connexion");
   };
 
-  const storedUser =
-    JSON.parse(localStorage.getItem("user")) ||
-    JSON.parse(sessionStorage.getItem("user"));
-  const displayName =
-    user.username ||
-    (storedUser && storedUser.username) ||
-    `${user.firstName} ${user.lastName}`;
+  // Vérification de sécurité pour éviter les erreurs si user est undefined
+  const displayName = user
+    ? user.userName || `${user.firstName || ""} ${user.lastName || ""}`.trim()
+    : "Guest";
 
   return (
     <div className={styles.header}>
