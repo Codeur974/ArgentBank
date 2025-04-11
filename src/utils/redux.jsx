@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// Utilitaires pour localStorage
 const loadFromLocalStorage = (key, defaultValue) => {
   const data = localStorage.getItem(key);
   return data ? JSON.parse(data) : defaultValue;
@@ -26,7 +25,7 @@ export const loginUser = createAsyncThunk(
         { headers: { "Content-Type": "application/json" } }
       );
       const data = response?.data?.body;
-      saveToLocalStorage("token", data.token); // Sauvegarde du token
+      saveToLocalStorage("token", data.token);
       return data;
     } catch (error) {
       return rejectWithValue(
@@ -36,7 +35,6 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Thunk pour récupérer les données utilisateur
 export const fetchUserData = createAsyncThunk(
   "user/fetchUserData",
   async (_, { rejectWithValue }) => {
@@ -53,7 +51,6 @@ export const fetchUserData = createAsyncThunk(
 
       const localData = loadFromLocalStorage("user", null);
 
-      // Vérifier si les données locales sont valides
       if (
         localData &&
         localData.userName &&
@@ -73,7 +70,34 @@ export const fetchUserData = createAsyncThunk(
   }
 );
 
-// Thunk pour mettre à jour le profil utilisateur
+export const updateUserNameOnServer = createAsyncThunk(
+  "user/updateUserNameOnServer",
+  async (userName, { rejectWithValue }) => {
+    try {
+      const token = loadFromLocalStorage("token", null);
+      if (!token) throw new Error("Token manquant dans localStorage");
+
+      const response = await axios.put(
+        "http://localhost:3001/api/v1/user/profile",
+        { userName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return response?.data?.body;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Erreur lors de la mise à jour du nom d'utilisateur"
+      );
+    }
+  }
+);
+
 export const updateUserProfile = createAsyncThunk(
   "user/updateUserProfile",
   async (newUserData, { rejectWithValue }) => {
@@ -102,7 +126,6 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
-// Slice utilisateur
 const userSlice = createSlice({
   name: "user",
   initialState: {
@@ -123,20 +146,6 @@ const userSlice = createSlice({
     hideEditForm: (state) => {
       state.isEditFormVisible = false;
     },
-    updateUserName: (state, action) => {
-      state.user.userName = action.payload;
-      saveToLocalStorage("user", state.user); // Sauvegarde dans localStorage
-
-      // Synchronisation avec l'API
-      const token = loadFromLocalStorage("token", null);
-      if (token) {
-        axios.put(
-          "http://localhost:3001/api/v1/user/profile",
-          { userName: action.payload },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
-    },
     logout: (state) => {
       state.user = { userName: "", firstName: "", lastName: "" };
       state.isAuthenticated = false;
@@ -154,12 +163,13 @@ const userSlice = createSlice({
       state.status = "succeeded";
       state.user = {
         ...state.user,
+
         userName: action.payload.userName,
         firstName: action.payload.firstName,
         lastName: action.payload.lastName,
       };
       state.isAuthenticated = true;
-      saveToLocalStorage("user", state.user); // Sauvegarde dans localStorage
+      saveToLocalStorage("user", state.user);
     };
 
     const setRejected = (state, action) => {
@@ -175,10 +185,14 @@ const userSlice = createSlice({
       .addCase(fetchUserData.fulfilled, setFulfilled)
       .addCase(fetchUserData.rejected, setRejected)
       .addCase(updateUserProfile.fulfilled, setFulfilled)
-      .addCase(updateUserProfile.rejected, setRejected);
+      .addCase(updateUserProfile.rejected, setRejected)
+      .addCase(updateUserNameOnServer.fulfilled, (state, action) => {
+        state.user.userName = action.payload.userName;
+        saveToLocalStorage("user", state.user);
+      })
+      .addCase(updateUserNameOnServer.rejected, setRejected);
   },
 });
 
-export const { showEditForm, hideEditForm, updateUserName, logout } =
-  userSlice.actions;
+export const { showEditForm, hideEditForm, logout } = userSlice.actions;
 export default userSlice.reducer;

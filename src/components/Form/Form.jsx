@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../utils/redux"; // Suppression de setError et updateUsername
+import { loginUser } from "../../utils/redux";
 import styles from "./form.module.scss";
 import { FaUserCircle } from "react-icons/fa";
 import Buttons from "../Buttons/Buttons";
@@ -9,7 +9,7 @@ import Buttons from "../Buttons/Buttons";
 export default function Form() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { error } = useSelector((state) => state.user); // Utilisation de error depuis Redux
+  const { error } = useSelector((state) => state.user);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

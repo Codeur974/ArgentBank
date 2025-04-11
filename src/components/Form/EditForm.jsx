@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { updateUserName } from "../../utils/redux";
+import { updateUserNameOnServer } from "../../utils/redux";
 import styles from "./editForm.module.scss";
 import Buttons from "../Buttons/Buttons";
 
@@ -19,10 +19,7 @@ export default function EditForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(updateUserName(newUsername));
-    const userData = JSON.parse(localStorage.getItem("user")) || {};
-    userData.userName = newUsername;
-    localStorage.setItem("user", JSON.stringify(userData));
+    dispatch(updateUserNameOnServer(newUsername));
     onCancel();
   };
 

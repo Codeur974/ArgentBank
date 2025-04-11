@@ -10,7 +10,6 @@ export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Accès à l'état Redux
   const { isAuthenticated, user } = useSelector((state) => state.user);
 
   const handleSignOut = () => {
@@ -22,7 +21,6 @@ export default function Header() {
     navigate("/connexion");
   };
 
-  // Vérification de sécurité pour éviter les erreurs si user est undefined
   const displayName = user
     ? user.userName || `${user.firstName || ""} ${user.lastName || ""}`.trim()
     : "Guest";

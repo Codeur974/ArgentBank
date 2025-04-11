@@ -8,7 +8,6 @@ import Buttons from "../Buttons/Buttons";
 export default function EditionBar() {
   const dispatch = useDispatch();
 
-  // Accès à l'état Redux
   const isEditFormVisible = useSelector(
     (state) => state.user.isEditFormVisible
   );
@@ -20,7 +19,6 @@ export default function EditionBar() {
     dispatch(fetchUserData());
   }, [dispatch]);
 
-  // Détermine le nom à afficher
   const displayName =
     userName !== "Utilisateur" && userName
       ? userName
