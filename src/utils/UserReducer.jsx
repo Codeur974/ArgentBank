@@ -17,6 +17,7 @@ const removeFromLocalStorage = (key) => {
 export const loginUser = createAsyncThunk(
   "user/loginUser",
   async ({ email, password, rememberMe }, { rejectWithValue }) => {
+    console.log("loginUser appelé avec :", { email, password, rememberMe });
     try {
       const response = await axios.post(
         "http://localhost:3001/api/v1/user/login",
@@ -40,10 +41,15 @@ export const loginUser = createAsyncThunk(
 
       return data;
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Identifiants incorrects. Veuillez réessayer.";
-      return rejectWithValue(errorMessage);
+      const errorMessage = error.response?.data?.message;
+
+      if (errorMessage === "Error: User not found!") {
+        return rejectWithValue("L'utilisateur n'existe pas.");
+      } else if (errorMessage === "Error: Password is invalid") {
+        return rejectWithValue("Le mot de passe est incorrect.");
+      } else {
+        return rejectWithValue("Une erreur est survenue. Veuillez réessayer.");
+      }
     }
   }
 );
