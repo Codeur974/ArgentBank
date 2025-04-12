@@ -14,53 +14,58 @@ const removeFromLocalStorage = (key) => {
   localStorage.removeItem(key);
 };
 
-// Thunk pour la connexion de l'utilisateur
 export const loginUser = createAsyncThunk(
   "user/loginUser",
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password, rememberMe }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         "http://localhost:3001/api/v1/user/login",
         { email, password },
         { headers: { "Content-Type": "application/json" } }
       );
+
       const data = response?.data?.body;
-      saveToLocalStorage("token", data.token);
+
+      if (data && data.token) {
+        if (rememberMe) {
+          console.log("Token stocké dans localStorage :", data.token);
+          localStorage.setItem("token", data.token);
+        } else {
+          console.log("Token stocké dans sessionStorage :", data.token);
+          sessionStorage.setItem("token", data.token);
+        }
+      } else {
+        throw new Error("Token manquant dans la réponse de l'API");
+      }
+
       return data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Erreur lors de la connexion"
-      );
+      const errorMessage =
+        error.response?.data?.message ||
+        "Identifiants incorrects. Veuillez réessayer.";
+      return rejectWithValue(errorMessage);
     }
   }
 );
-
 export const fetchUserData = createAsyncThunk(
   "user/fetchUserData",
   async (_, { rejectWithValue }) => {
     try {
-      const token = loadFromLocalStorage("token", null);
-      if (!token) throw new Error("Token manquant dans localStorage");
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token manquant dans localStorage ou sessionStorage");
+      }
 
       const response = await axios.get(
         "http://localhost:3001/api/v1/user/profile",
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
-      const apiData = response?.data?.body;
-
-      const localData = loadFromLocalStorage("user", null);
-
-      if (
-        localData &&
-        localData.userName &&
-        localData.firstName &&
-        localData.lastName
-      ) {
-        return localData;
-      }
-
-      return apiData;
+      return response?.data?.body;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message ||
@@ -69,13 +74,14 @@ export const fetchUserData = createAsyncThunk(
     }
   }
 );
-
 export const updateUserNameOnServer = createAsyncThunk(
   "user/updateUserNameOnServer",
   async (userName, { rejectWithValue }) => {
     try {
-      const token = loadFromLocalStorage("token", null);
-      if (!token) throw new Error("Token manquant dans localStorage");
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token)
+        throw new Error("Token manquant dans localStorage ou sessionStorage");
 
       const response = await axios.put(
         "http://localhost:3001/api/v1/user/profile",
@@ -90,38 +96,10 @@ export const updateUserNameOnServer = createAsyncThunk(
 
       return response?.data?.body;
     } catch (error) {
-      return rejectWithValue(
+      const errorMessage =
         error.response?.data?.message ||
-          "Erreur lors de la mise à jour du nom d'utilisateur"
-      );
-    }
-  }
-);
-
-export const updateUserProfile = createAsyncThunk(
-  "user/updateUserProfile",
-  async (newUserData, { rejectWithValue }) => {
-    try {
-      const token = loadFromLocalStorage("token", null);
-      if (!token) throw new Error("Token manquant dans localStorage");
-
-      const response = await axios.put(
-        "http://localhost:3001/api/v1/user/profile",
-        newUserData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      return response?.data?.body;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Erreur lors de la mise à jour des données utilisateur"
-      );
+        "Erreur lors de la mise à jour du nom d'utilisateur";
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -135,7 +113,9 @@ const userSlice = createSlice({
       lastName: "",
     }),
     isEditFormVisible: false,
-    isAuthenticated: false,
+    isAuthenticated: !!(
+      localStorage.getItem("token") || sessionStorage.getItem("token")
+    ),
     status: "idle",
     error: null,
   },
@@ -173,24 +153,54 @@ const userSlice = createSlice({
     };
 
     const setRejected = (state, action) => {
+      const errorMsg =
+        typeof action.payload === "string"
+          ? action.payload
+          : action.error?.message || "Une erreur est survenue.";
+
+      console.error("Erreur capturée dans Redux Slice :", errorMsg);
       state.status = "failed";
-      state.error = action.payload;
+      state.error = errorMsg;
+      state.isAuthenticated = false;
     };
 
     builder
-      .addCase(loginUser.pending, setPending)
-      .addCase(loginUser.fulfilled, setFulfilled)
+      .addCase(loginUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.isAuthenticated = true;
+        state.user = action.payload;
+        state.error = null;
+        state.isEditFormVisible = false;
+      })
       .addCase(loginUser.rejected, setRejected)
       .addCase(fetchUserData.pending, setPending)
       .addCase(fetchUserData.fulfilled, setFulfilled)
-      .addCase(fetchUserData.rejected, setRejected)
-      .addCase(updateUserProfile.fulfilled, setFulfilled)
-      .addCase(updateUserProfile.rejected, setRejected)
-      .addCase(updateUserNameOnServer.fulfilled, (state, action) => {
-        state.user.userName = action.payload.userName;
-        saveToLocalStorage("user", state.user);
-      })
-      .addCase(updateUserNameOnServer.rejected, setRejected);
+      .addCase(fetchUserData.rejected, setRejected);
+
+    builder.addCase(updateUserNameOnServer.fulfilled, (state, action) => {
+      state.user.userName = action.payload.userName;
+
+      const syncUserData = (state) => {
+        if (localStorage.getItem("token")) {
+          console.log(
+            "Données utilisateur stockées dans localStorage :",
+            state.user
+          );
+          saveToLocalStorage("user", state.user);
+        } else if (sessionStorage.getItem("token")) {
+          console.log(
+            "Données utilisateur stockées dans sessionStorage :",
+            state.user
+          );
+          sessionStorage.setItem("user", JSON.stringify(state.user));
+        }
+      };
+      syncUserData(state);
+    });
   },
 });
 

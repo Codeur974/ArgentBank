@@ -1,9 +1,13 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchUserData,
+  hideEditForm,
+  showEditForm,
+} from "../../utils/UserReducer";
+import Buttons from "../Buttons/Buttons";
 import EditForm from "../Form/EditForm";
 import styles from "./editionBar.module.scss";
-import { showEditForm, hideEditForm, fetchUserData } from "../../utils/redux";
-import Buttons from "../Buttons/Buttons";
 
 export default function EditionBar() {
   const dispatch = useDispatch();
@@ -19,17 +23,27 @@ export default function EditionBar() {
     dispatch(fetchUserData());
   }, [dispatch]);
 
-  const displayName =
-    userName !== "Utilisateur" && userName
-      ? userName
-      : `${firstName} ${lastName}`.trim();
+  const displayName = userName && userName !== "Utilisateur" ? userName : "";
 
   return (
     <div className={styles.editionBar__container}>
       <h1 className={styles.editionBar__title}>
-        Welcome back
-        <br />
-        {displayName}!
+        {isEditFormVisible ? (
+          "Edit user infos"
+        ) : (
+          <>
+            Welcome
+            {displayName && (
+              <>
+                {" "}
+                back
+                <br />
+                {displayName}
+              </>
+            )}
+            !
+          </>
+        )}
       </h1>
 
       {!isEditFormVisible && (

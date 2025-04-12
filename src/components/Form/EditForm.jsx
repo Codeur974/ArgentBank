@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { updateUserNameOnServer } from "../../utils/redux";
-import styles from "./editForm.module.scss";
+import { updateUserNameOnServer } from "../../utils/UserReducer";
 import Buttons from "../Buttons/Buttons";
+import styles from "./editForm.module.scss";
 
 export default function EditForm({
-  username = "",
+  username = "user",
   firstName = "",
   lastName = "",
   onCancel,

@@ -1,10 +1,10 @@
 import React from "react";
-import logo from "../../assets/images/logo.webp";
-import styles from "./Header.module.scss";
+import { FaSignOutAlt, FaUserCircle } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../utils/redux";
+import logo from "../../assets/images/logo.webp";
+import { logout } from "../../utils/UserReducer";
+import styles from "./Header.module.scss";
 
 export default function Header() {
   const dispatch = useDispatch();
@@ -21,9 +21,7 @@ export default function Header() {
     navigate("/connexion");
   };
 
-  const displayName = user
-    ? user.userName || `${user.firstName || ""} ${user.lastName || ""}`.trim()
-    : "Guest";
+  const displayName = user && user.userName ? user.userName : "user";
 
   return (
     <div className={styles.header}>

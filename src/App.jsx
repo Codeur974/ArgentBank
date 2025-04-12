@@ -3,7 +3,7 @@ import Home from "./pages/Home/Home";
 import Connexion from "./pages/Connexion/Connexion";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Layout from "./Layout/Layout";
-
+import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
 function App() {
   return (
     <>
@@ -12,7 +12,14 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="connexion" element={<Connexion />} />
-            <Route path="dashboard" element={<Dashboard />} />
+            <Route
+              path="dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
           </Route>
         </Routes>
       </Router>

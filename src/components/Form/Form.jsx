@@ -1,10 +1,10 @@
 import { useState } from "react";
+import { FaUserCircle } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../utils/redux";
-import styles from "./form.module.scss";
-import { FaUserCircle } from "react-icons/fa";
+import { loginUser } from "../../utils/UserReducer";
 import Buttons from "../Buttons/Buttons";
+import styles from "./form.module.scss";
 
 export default function Form() {
   const dispatch = useDispatch();
@@ -18,18 +18,12 @@ export default function Form() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Appel de l'action loginUser
     const resultAction = await dispatch(
       loginUser({ email, password, rememberMe })
     );
 
     if (loginUser.fulfilled.match(resultAction)) {
       navigate("/dashboard");
-    } else {
-      console.error(
-        "Failed to login:",
-        resultAction.payload || resultAction.error
-      );
     }
   };
 
@@ -47,7 +41,6 @@ export default function Form() {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
           />
-          {error?.email && <p className={styles.error}>{error.email}</p>}
         </div>
         <div className={styles.form__input__wrapper}>
           <label htmlFor="password">Password</label>
@@ -58,7 +51,6 @@ export default function Form() {
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
           />
-          {error?.password && <p className={styles.error}>{error.password}</p>}
         </div>
         <div className={styles.form__input__remember}>
           <input
@@ -69,6 +61,8 @@ export default function Form() {
           />
           <label htmlFor="remember-me">Remember me</label>
         </div>
+
+        {error && <p className={styles.error}>{error}</p>}
 
         <Buttons
           type="submit"
