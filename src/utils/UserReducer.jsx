@@ -17,7 +17,6 @@ const removeFromLocalStorage = (key) => {
 export const loginUser = createAsyncThunk(
   "user/loginUser",
   async ({ email, password, rememberMe }, { rejectWithValue }) => {
-    console.log("loginUser appelé avec :", { email, password, rememberMe });
     try {
       const response = await axios.post(
         "http://localhost:3001/api/v1/user/login",
@@ -29,10 +28,8 @@ export const loginUser = createAsyncThunk(
 
       if (data && data.token) {
         if (rememberMe) {
-          console.log("Token stocké dans localStorage :", data.token);
           localStorage.setItem("token", data.token);
         } else {
-          console.log("Token stocké dans sessionStorage :", data.token);
           sessionStorage.setItem("token", data.token);
         }
       } else {
@@ -110,6 +107,14 @@ export const updateUserNameOnServer = createAsyncThunk(
   }
 );
 
+const syncUserData = (user) => {
+  if (localStorage.getItem("token")) {
+    saveToLocalStorage("user", user);
+  } else if (sessionStorage.getItem("token")) {
+    sessionStorage.setItem("user", JSON.stringify(user));
+  }
+};
+
 const userSlice = createSlice({
   name: "user",
   initialState: {
@@ -135,6 +140,8 @@ const userSlice = createSlice({
     logout: (state) => {
       state.user = { userName: "", firstName: "", lastName: "" };
       state.isAuthenticated = false;
+      state.status = "idle";
+      state.error = null;
       removeFromLocalStorage("token");
       removeFromLocalStorage("user");
     },
@@ -149,13 +156,12 @@ const userSlice = createSlice({
       state.status = "succeeded";
       state.user = {
         ...state.user,
-
         userName: action.payload.userName,
         firstName: action.payload.firstName,
         lastName: action.payload.lastName,
       };
       state.isAuthenticated = true;
-      saveToLocalStorage("user", state.user);
+      syncUserData(state.user);
     };
 
     const setRejected = (state, action) => {
@@ -171,42 +177,23 @@ const userSlice = createSlice({
     };
 
     builder
-      .addCase(loginUser.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
+      .addCase(loginUser.pending, setPending)
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.isAuthenticated = true;
         state.user = action.payload;
         state.error = null;
         state.isEditFormVisible = false;
+        syncUserData(action.payload);
       })
       .addCase(loginUser.rejected, setRejected)
       .addCase(fetchUserData.pending, setPending)
       .addCase(fetchUserData.fulfilled, setFulfilled)
-      .addCase(fetchUserData.rejected, setRejected);
-
-    builder.addCase(updateUserNameOnServer.fulfilled, (state, action) => {
-      state.user.userName = action.payload.userName;
-
-      const syncUserData = (state) => {
-        if (localStorage.getItem("token")) {
-          console.log(
-            "Données utilisateur stockées dans localStorage :",
-            state.user
-          );
-          saveToLocalStorage("user", state.user);
-        } else if (sessionStorage.getItem("token")) {
-          console.log(
-            "Données utilisateur stockées dans sessionStorage :",
-            state.user
-          );
-          sessionStorage.setItem("user", JSON.stringify(state.user));
-        }
-      };
-      syncUserData(state);
-    });
+      .addCase(fetchUserData.rejected, setRejected)
+      .addCase(updateUserNameOnServer.fulfilled, (state, action) => {
+        state.user.userName = action.payload.userName;
+        syncUserData(state.user);
+      });
   },
 });
 

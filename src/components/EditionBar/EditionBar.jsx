@@ -25,6 +25,9 @@ export default function EditionBar() {
 
   const displayName = userName && userName !== "Utilisateur" ? userName : "";
 
+  const handleShowEditForm = () => dispatch(showEditForm());
+  const handleHideEditForm = () => dispatch(hideEditForm());
+
   return (
     <div className={styles.editionBar__container}>
       <h1 className={styles.editionBar__title}>
@@ -50,7 +53,7 @@ export default function EditionBar() {
         <Buttons
           title={"Edit Name"}
           className={styles.editionBar__button}
-          onClick={() => dispatch(showEditForm())}
+          onClick={handleShowEditForm}
         />
       )}
 
@@ -61,7 +64,7 @@ export default function EditionBar() {
           username={userName}
           firstName={firstName}
           lastName={lastName}
-          onCancel={() => dispatch(hideEditForm())}
+          onCancel={handleHideEditForm}
         />
       )}
     </div>
