@@ -1,4 +1,4 @@
-import styles from "./Feature.module.scss";
+import styles from "./feature.module.scss";
 
 export default function Feature({ title, imgSrc, subtitles, description }) {
   return (

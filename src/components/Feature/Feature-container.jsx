@@ -1,8 +1,8 @@
-import Feature from "../../components/Feature/Feature";
+import Feature from "./Feature";
 import imgSrc from "../../assets/images/icon-chat.webp";
 import imgSrc2 from "../../assets/images/icon-money.webp";
 import imgSrc3 from "../../assets/images/icon-security.webp";
-import styles from "./Feature.module.scss";
+import styles from "./feature.module.scss";
 
 export default function FeatureContainer() {
   return (

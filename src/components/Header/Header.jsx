@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.webp";
 import { logout } from "../../utils/UserReducer";
-import styles from "./Header.module.scss";
+import styles from "./header.module.scss";
 
 export default function Header() {
   const dispatch = useDispatch();
